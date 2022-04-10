@@ -3,22 +3,56 @@ const logger = require('./logger')
 
 const router = express.Router();
 
-router.get('/user-profile/:abcd', function(req, res) {
-    console.log(req)
-    console.log(req.params.abcd)
-    res.send('dummy response')
-})
+let players=[
+{
+    "name": "john",
+    "dob": "1/1/1995",
+    "gender": "male",
+    "city": "jalandhar",
+    "sports": [
+    "swimming"
+    ]
+    },
+    {
+        "name": "harry",
+        "dob": "1/09/1995",
+        "gender": "male",
+        "city": "delhi",
+        "sports": [
+            "soccer"
+        ]
+    },
+    {
+        "name": "suraj",
+        "dob": "1/1/1990",
+        "gender": "male",
+        "city": "mumbai",
+        "sports": [
+            "soccer"
+        ]
+    },
+]
 
-router.get('/test-me', function (req, res) {
-    console.log('------------------')
-    console.log(req)
-    console.log('------------------')
-    console.log('These are the request query parameters: ', req.query)
-    res.send('My first ever api!')
-});
+router.post('/players', function (req,res){
+    
+     
+    // let hello=(req.body.name===players.name)?"Player with same name already exist":players.push(req.body)
+    //  res.send(  { players, status: true }  )
+    // console.log(hello)
+    if( players.find(item=>item.name===req.body.name)){
+    res.send("player already exist with the same name")
+    }else{
+        players.push(req.body)
+        res.send(  { data: players , status: true }  )
+
+    }
+ })
 
 
-
-
+    
+         
+        
+    
+    
 module.exports = router;
 // adding this comment for no reason
