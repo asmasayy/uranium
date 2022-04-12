@@ -8,9 +8,55 @@ const createBook= async function (req, res) {
     res.send({msg: savedData})
 }
 
-const getBooksData= async function (req, res) {
+const bookList= async function (req, res) {
+let allBooks= await BookModel.find().select( { bookName: 1, authorName: 1, _id: 0})
+    
+    res.send({msg: allBooks})
+}
 
-    // let allBooks= await BookModel.find( ).count() // COUNT
+const getBooksInYear= async function (req, res) {
+    let booksInYear= await BookModel.find({year:2000})
+        
+        res.send({msg: booksInYear})
+    }
+
+    const getParticularBooks= async function (req, res) {
+        // let booksInYear= await BookModel.find({ authorName : "Khaled" , isPublished: true  })
+
+        // let booksInYear= await BookModel.find( {
+        //     $or: [ {authorName : "Khaled" } , { isPublished: false } , {  "year": 2003 }]})
+
+        // let booksInYear= await BookModel.find().sort({totalPages: -1})
+
+        let booksByFunction= await BookModel.find({"year":2021}).limit(2)
+            res.send({msg: booksByFunction})
+        }
+
+        const getXINRBooks= async function (req, res) {
+            let bookByPrice= await BookModel.find({ prices : { $in: ["100INR","200INR", "500INR"] }     })
+                
+                res.send({msg: bookByPrice})
+            }
+
+        const getRandomBooks = async function (req, res) {
+                let randomBooks= await BookModel.find({ $or :[ {authorName:"Khaled"},{ totalPages: { $gt:  500 }  }] });
+                    
+                    res.send({msg: randomBooks})
+                }    
+
+
+
+
+module.exports.createBook= createBook
+module.exports.bookList= bookList
+module.exports.getBooksInYear= getBooksInYear
+module.exports.getParticularBooks= getParticularBooks
+module.exports.getXINRBooks=getXINRBooks
+module.exports.getRandomBooks=getRandomBooks 
+
+
+
+// let allBooks= await BookModel.find( ).count() // COUNT
 
     // let allBooks= await BookModel.find( { authorName : "Chetan Bhagat" , isPublished: true  } ) // AND
     
@@ -64,22 +110,3 @@ const getBooksData= async function (req, res) {
     // let allBooks= await BookModel.find( { bookName:  /.*Programming.*/i  }) 
     
     // ASYNC AWAIT
-    
-    let a= 2+4
-    a= a + 10
-    console.log(a)
-    let allBooks= await BookModel.find( )  //normally this is an asynchronous call..but await makes it synchronous
-
-
-    // WHEN AWAIT IS USED: - database + axios
-    //  AWAIT can not be used inside forEach , map and many of the array functions..BE CAREFUL
-    console.log(allBooks)
-    let b = 14
-    b= b+ 10
-    console.log(b)
-    res.send({msg: allBooks})
-}
-
-
-module.exports.createBook= createBook
-module.exports.getBooksData= getBooksData
