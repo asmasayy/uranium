@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-// const UserModel= require("../models/userModel.js")
+const UserModel= require("../models/userModel.js")
 const UserController= require("../controllers/userController")
+const productModel= require("../models/productModel.js")
+const middleware=require("../middlewares/commonMiddlewares")
 //const BookController= require("../controllers/bookController")
 
 
@@ -10,12 +12,14 @@ router.get("/test-me", function (req, res) {
 })
 
 
-// router.post("/createUser", UserController.createUser  )
+router.post("/createUser",middleware.mid4, UserController.createUser  )
+router.post("/productCreate", UserController.createProduct  )
+router.post("/orderCreate", middleware.mid4,UserController.createOrder )
 // router.get("/getUsersData", UserController.getUsersData)
 
 
 // const mid1= function ( req, res, next) {
-//     console.log("Hi I am a middleware named Mid1")
+//     console.log("Hi I am a middleware named Mid1"    )
 //     // logic
 //     let loggedIn = false
 
@@ -41,8 +45,8 @@ router.get("/test-me", function (req, res) {
 
 
 
-router.get("/basicRoute", UserController.basicCode)
-router.post('/create-a-user', UserController.createAUser)
+// router.get("/basicRoute", UserController.basicCode)
+// router.post('/create-a-user', UserController.createAUser)
 
 
 
