@@ -23,5 +23,7 @@ const validateUser = async function (req, res,next) {
     }
     next()
 }
+
+
 module.exports.validateToken= validateToken
 module.exports.validateUser=validateUser
