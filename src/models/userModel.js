@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    posts:String,
     age: Number,
 }, { timestamps: true });
 

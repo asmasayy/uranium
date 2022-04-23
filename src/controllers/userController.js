@@ -2,14 +2,19 @@ const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel");
 
 const createUser = async function (req, res) {
-  
+  try{
   let data = req.body;
   let savedData = await userModel.create(data);
   console.log(req.newAtribute);
-  res.send({ msg: savedData });
+  res.status(201).send({ msg: savedData });
+  }
+  catch(err){
+    return res.status(400).send({err})
+  }
 };
 
 const loginUser = async function (req, res) {
+  
   let userName = req.body.emailId;
   let password = req.body.password;
 
@@ -51,7 +56,7 @@ const getUserData = async function (req, res) {
 };
 
 const updateUser = async function (req, res) {
-
+  try{
   let userId = req.params.userId;
   let user = await userModel.findById(userId);
   
@@ -61,15 +66,18 @@ const updateUser = async function (req, res) {
 
   let userData = req.body;
   let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, userData);
-  res.send({ status: updatedUser, data: updatedUser });
+  res.status(200).send({ status: updatedUser, data: updatedUser });
+}catch(err){
+  return res.status(401).send({err})
+}
 };
 
 const deleteUser = async function (req, res) {
-  // let userId = req.params.userId;
-  // let user = await userModel.findById(userId);
-  // if (!user) {
-  //   return res.send("No such user exists");
-  // }
+  let userId = req.params.userId;
+  let user = await userModel.findById(userId);
+  if (!user) {
+    return res.send("No such user exists");
+  }
 
   let userData = req.params.userId;
   let updatedUser = await userModel.findOneAndUpdate(
@@ -80,4 +88,21 @@ const deleteUser = async function (req, res) {
   res.send({ status: true, data: updatedUser });
 }
 
-module.exports={createUser,getUserData,updateUser,loginUser,deleteUser}
+const postUser= async function(req,res){
+  try{
+  let userId=req.params.userId;
+  let user=await userModel.findById(userId)
+  if(!user){
+    return res.status(401).send("no such user exists")
+  }
+ let post=req.body.posts
+ let updatedPost=await userModel.findOneAndUpdate({_id:userId},{posts:post},{new:true})
+
+  res.send({status:true,data:updatedPost})
+}catch{
+  res.status(404).send({msg:"not found"})
+}
+}
+
+
+module.exports={createUser,getUserData,updateUser,loginUser,deleteUser,postUser}
