@@ -1,26 +1,24 @@
 const AuthorModel = require("../models/authorModel");
-
+const moment=require("moment")
 const BlogModel = require("../models/blogModel");
 
 // 1st
 
 const createAuthors = async function (req, res) {
-    // let validateEmail= async function isEmailValid(email) {
-    //     if (!email)
-    //         return false;
+    try {
+        let a = req.body;
+        if (a.firstName === undefined || a.lastName === undefined || a.title === undefined || a.password === undefined) {
+            return res.send({ status: false, msg: "Mandatory field missing" })
+        }
 
-    //     if (email.length > 200)
-    //         return false;}
-    let a = req.body;
-    if (a.firstName === undefined || a.lastName === undefined || a.title === undefined || a.password === undefined) {
-        return res.send({ status: false, msg: "Mandatory field missing" })
+
+        let savedDate = await AuthorModel.create(a)
+        res.send({ status: true, savedDate })
+    } catch (error) {
+        res.status(400).send({ status: false, msg: error.message });
     }
-
-
-    let savedDate = await AuthorModel.create(a)
-    res.send({ status: true, savedDate })
-
 }
+
 
 module.exports.createAuthors = createAuthors;
 
@@ -41,7 +39,7 @@ const createBlogs = async function (req, res) {
                 res.status(201).send({ msg: savedDate })
             }
             else {
-                res.status(400).send({ status: false, msg: "author id is not present" })
+                 res.status(400).send({ status: false, msg: "author id is not present" })
             }
         }
     }
@@ -112,7 +110,7 @@ const validateBlog = async function (req, res) {
         if (!validateblogId) {
             return res.status(404).send({ status: false, msg: "BlogId does not exist." })
         }
-        let updatedBlog = await BlogModel.findByIdAndUpdate({ _id: blogId }, { $set: { isDeleted: true } })
+        let updatedBlog = await BlogModel.findByIdAndUpdate({ _id: blogId }, { $set: { isDeleted: true } },{isDeleted:Date.now()})
         res.status(200).send({ msg: "Successfully updated." })
     }
     catch (err) {
@@ -126,31 +124,25 @@ module.exports.validateBlog = validateBlog;
 // 6th
 const deleteBlog = async function (req, res) {
     try {
-        let category = req.query.category
-        let authorId = req.query.authorId
-        let tag = req.query.tag
-        let subcategory = req.query.subcategory
-        let published = req.query.isPublished
+        let data = req.query
+        if (Object.keys(data) === 0)
 
-        let Data = await BlogModel.find({
-            $in: [{ category: category }, { authorId: authorId },
-            { subcategory: subcategory }, { published: published }, { tags: tag }]
-        })
+            return res.status(400).send({ status: false, msg: "input missing" })
 
-        if (Data) {
+        let deleted = await BlogModel.updateMany({
+            $and: [data, { ispublised: false }]
+        }, { isDeleted: true, deletedAt: Date.now() }, { new: true }
+        );
 
-            let deleteData = await BlogModel.updateMany({ isDeleted: false })
+        if (!deleted)
+            return res.staus(404).send({ status: false, msg: "Blog not found" });
+        return res.status(200).send({ status: true, data: deleted });
 
-            res.status(200).send({ status: true, data: deleteData });
 
-        }
-        else {
-            return res.status(400).send({ msg: "page not found." })
-        }
     }
-    catch (error) {
-        res.status(500).send({ msg: "Error", error: error.message })
+    catch (err) {
+        console.log("This is the error :", err.message)
+        res.status(500).send({ msg: "Error", error: err.message })
     }
-};
-
+}
 module.exports.deleteBlog = deleteBlog;
