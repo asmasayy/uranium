@@ -1,5 +1,5 @@
 const AuthorModel = require("../models/authorModel");
-const moment=require("moment")
+const moment = require("moment")
 const BlogModel = require("../models/blogModel");
 
 // 1st
@@ -7,48 +7,49 @@ const BlogModel = require("../models/blogModel");
 const createAuthors = async function (req, res) {
     try {
         let a = req.body;
+        // We have handled edge cases here
         if (a.firstName === undefined || a.lastName === undefined || a.title === undefined || a.password === undefined) {
-            return res.send({ status: false, msg: "Mandatory field missing" })
+            return res.status(400).send({ status: false, msg: "Mandatory field missing" })
         }
 
-
+        //  here the model is created in database
         let savedDate = await AuthorModel.create(a)
-        res.send({ status: true, savedDate })
+        res.status(201).send({ status: true, savedDate })
     } catch (error) {
-        res.status(400).send({ status: false, msg: error.message });
+        res.status(500).send({ status: false, msg: error.message });
     }
 }
-
-
 module.exports.createAuthors = createAuthors;
 
 // 2nd
 
+
 const createBlogs = async function (req, res) {
     try {
-        let data = req.body;
-        let condition = await AuthorModel.findById(data.authorId)
-        if (condition) {
-            if (data.isPublished == true) {
-                data.publishedAt = Date.now()
-                let savedDate = await BlogModel.create(data)
-                res.status(201).send({ msg: savedDate })
-            }
-            else if (data.isPublished == false) {
-                let savedDate = await BlogModel.create(data)
-                res.status(201).send({ msg: savedDate })
-            }
-            else {
-                 res.status(400).send({ status: false, msg: "author id is not present" })
-            }
+        if (!req.body.authorId) {
+            return res.status(400).send({ status: false, msg: "First Add Author-Id In Body" });
         }
+
+        let authorid = await AuthorModel.findById(req.body.authorId);
+        if (!authorid) {
+            return res.status(400).send({ status: false, msg: "Plz Enter Valid Author Id" });
+        }
+
+        //     if (req.body.isPublished == true) {
+        //         req.body.publishedAt = Date.now();
+        //         let createblogs = await BlogModel.create(req.body);
+
+        //         res.status(201).send({ createblogs });
+        //     }
+        //     else (req.body.isPublished == true)  
+        let createblogs = await BlogModel.create(req.body);
+        res.status(201).send({ createblogs });
+
     }
     catch (err) {
-        console.log(err.message)
-        res.status(500).send({ status: false, msg: err.message })
+        return res.status(500).send({ status: false, msg: err.message });
     }
-}
-
+};
 module.exports.createBlogs = createBlogs;
 
 
@@ -58,6 +59,7 @@ const getBlogs = async function (req, res) {
     try {
         req.query.isDeleted = false
         req.query.isPublished = true
+        // here we are checking query validation
         let filter = await BlogModel.find(req.query).populate("authorId");
         if (!filter.length)
             return res.status(404).send({ status: false, msg: "No such documents found." })
@@ -74,31 +76,33 @@ module.exports.getBlogs = getBlogs;
 const updateBlogs = async function (req, res) {
     try {
         let Id = req.params.blogId
-        console.log(Id)
         if (Id.match()) {
 
             let user = await BlogModel.findById(Id)
-            console.log(user)
             if (!user) {
                 return res.status(404).send({ staus: false, msg: "No such blog exists" });
             }
-            let date = moment().format('YYYY-MM-DD HH:MM:SS')
             let userData = req.body;
-            if (Object.keys(userData).length != 0) {
-                let updatedUser = await BlogModel.findByIdAndUpdate({ _id: Id }, userData, { publishedAt: date })
-
-                return res.status(201).send({ status: true, data: updatedUser });
+            let updatedBlog = await BlogModel.findByIdAndUpdate({ _id: Id }, userData)
+            if (updatedBlog.isPublished == true) {
+                updatedBlog.publishedAt = new Date();
+            }
+            if (updatedBlog.isPublished == false) {
+                updatedBlog.publishedAt = null;
             }
 
-            else res.status(400).send({ msg: "BAD REQUEST" })
+            return res.status(201).send({ status: true, data: updatedBlog });
         }
+
+        else res.status(400).send({ msg: "BAD REQUEST" })
     }
+
     catch (err) {
         console.log("This is the error :", err.message)
         res.status(500).send({ msg: "Error", error: err.message })
     }
 };
-module.exports.updateBlogs=updateBlogs;
+module.exports.updateBlogs = updateBlogs;
 
 // 5th
 
@@ -110,7 +114,7 @@ const validateBlog = async function (req, res) {
         if (!validateblogId) {
             return res.status(404).send({ status: false, msg: "BlogId does not exist." })
         }
-        let updatedBlog = await BlogModel.findByIdAndUpdate({ _id: blogId }, { $set: { isDeleted: true } },{isDeleted:Date.now()})
+        let updatedBlog = await BlogModel.findByIdAndUpdate({ _id: blogId }, { $set: { isDeleted: true } }, { isDeleted: Date.now()})
         res.status(200).send({ msg: "Successfully updated." })
     }
     catch (err) {
